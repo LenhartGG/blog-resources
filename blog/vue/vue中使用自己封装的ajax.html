@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vue中使用自己封装的ajax</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1><a id="vueajax_0"></a>vue中使用自己封装的ajax</h1>
+<h2><a id="1promise_2"></a>1.回调函数的解决方法promise类</h2>
+<p>在讲ajax之前，今天我先讲讲回调函数，所谓回调函数，就是将后续的处理逻辑传入到当前要做的事情，事情做好之后调用此函数，下面实现一个买菜的例子。</p>
+<pre><code>let a = '';
+function buy(callback) {
+    setTimeout(()=&gt;{
+        a = '蘑菇';
+        callback(a);
+    }, 2000);
+}
+buy(function cookie(val) {
+    console.log(val);
+});
+</code></pre>
+<p><strong>promise</strong> 是用来解决回调问题， <strong>promise</strong> 的实例就是一个 <strong>then</strong> 方法，<strong>then</strong> 方法中有两个参数，<strong>resolve</strong>和<strong>reject</strong>，<br>
+下面是<strong>promise</strong>的三个<strong>状态</strong>（不传参数的时候会直接执行）</p>
+<ul>
+<li>fulfill 成功态 会调用resolve函数</li>
+<li>reject 失败态 会调用reject函数</li>
+<li>wait 等待态</li>
+</ul>
+<p>然后再用promise解决上面的买菜方法：</p>
+<pre><code>let promise = new Promise((resolve, reject)=&gt;{
+    setTimeout(() =&gt; {
+        let a = '蘑菇';
+        // resolve(a);
+        reject();
+    }, 2000);
+});
+promise.then((data)=&gt;{console.log(data)}, (err)=&gt;{console.log('err')})
+</code></pre>
+<p>下面再使用promise写一个投掷硬币给女朋友买包的功能：</p>
+<pre><code>function buyPack() {
+	return new Promise((resolve, reject)=&gt;{
+		setTimeout(()=&gt;{
+			if (Math.random()&gt;0.5){
+				resolve('买包');
+			} else {
+				reject('不买');
+			}
+		}, Math.random()*3000); // 3秒之内要做出决定，你懂得
+	
+	})
+}
+buyPack().then((data)=&gt;{
+	console.log(data);
+}, ()=&gt;{
+	console.log(data);
+});
+</code></pre>
+<h2><a id="2promiseajax_promiseajax_59"></a>2.使用promise封装异步ajax promise-ajax</h2>
+<p>首先我先创建一个 cart.json 文件，用来保存json数据。</p>
+<pre><code>[
+  {
+    "isSelected": true,
+    "productCover": "123",
+    "productName": "深入浅出Node.js学习",
+    "productInfo": "深入浅出Node.js学习,深入浅出Node.js学习",
+    "productPrice": 45.5,
+    "productCount": 1
+  },
+  {
+    "isSelected": true,
+    "productCover": "345",
+    "productName": "javascript数据结构与算法",
+    "productInfo": "javascript数据结构与算法,javascript数据结构与算法",
+    "productPrice": 49.5,
+    "productCount": 1
+  }
+]
+</code></pre>
+<p>然后创建了一个 promise-ajax.js 的文件，然后把<strong>ajax</strong>用<strong>promise</strong>的方法封装了一下，然后就可以使用了</p>
+<pre><code>/**
+ * promise-ajax
+ * @param url
+ * @param type
+ * @param dataType
+ * @returns {Promise&lt;any&gt;}
+ */
+function ajax({url='', type='get', dataType='json'}) {
+    return new Promise((resolve, reject)=&gt;{
+        let xhr = new XMLHttpRequest();
+        xhr.open(type, url, true);
+        xhr.responseType = dataType;
+        xhr.onload = function () {  // xhr.onReadyState === 4 &amp;&amp; xhr.status === 200
+            resolve(xhr.response);  //成功调用成功的方法
+        };
+        xhr.onerror = function (err) {
+            reject(err);            //失败调用失败的方法
+        }
+        xhr.send();
+    });
+}
+</code></pre>
+<h2><a id="3vueajax_vueajax_107"></a>3.实现vue中使用封装的ajax方法 vue-ajax</h2>
+<p>我是用的<strong>webstorm</strong> 的服务器，接下来使用vue的方法来请求cart.json文件。</p>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;vue-ajax&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id="app"&gt;
+    {{arr}}
+&lt;/div&gt;
+&lt;script src="./node_modules/vue/dist/vue.js"&gt;&lt;/script&gt;
+&lt;script src="./4.promise-ajax.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+
+    let vm = new Vue({
+        el: '#app',
+        //专门用来发送ajax的方法
+        created(){
+            ajax({url:'./cart.json'}).then((res)=&gt;{
+                console.log(res);
+            }, (err)=&gt;{
+                //...
+            })
+        },
+        method:{
+            a:''
+        },
+        data: {
+            arr:[],
+            products:[]
+        }
+    });
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>然后在chrome的开发者工具中就可以看到数据请求回来了。<br>
+<img src="http://img.blog.csdn.net/20180206144239069?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvZ2l0aHViXzM4ODUxNDcx/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+</div>
+</body>
+
+</html>

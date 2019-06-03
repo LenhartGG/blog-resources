@@ -1,5 +1,5 @@
 ﻿ECMAScript 6 目前基本成为业界标准，它的普及速度比 ES5 要快很多，主要原因是现代浏览器对 ES6 的支持相当迅速，尤其是 Chrome 和 Firefox 浏览器，已经支持 ES6 中绝大多数的特性。
-![这里写图片描述](http://img.blog.csdn.net/20180119100920909?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvZ2l0aHViXzM4ODUxNDcx/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast)
+![这里写图片描述](https://github.com/LenhartGG/blog-resources/blob/master/img/wechart/ES6.png?raw=true)
 ### 1. let、const 和 block 作用域
 let 允许创建块级作用域，ES6 推荐在函数中使用 let 定义变量，而非 var：
 

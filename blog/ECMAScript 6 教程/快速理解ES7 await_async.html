@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>快速理解ES7 await/async</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p>await/async 是 ES7 最重要特性之一，它是目前为止 JS 最佳的异步解决方案了。虽然没有在 ES2016 中录入，但很快就到来，目前已经在 ES-Next Stage 4 阶段。</p>
+<p>直接上例子，比如我们需要按顺序获取：产品数据=&gt;用户数据=&gt;评论数据</p>
+<h2><a id="_Ajax_4"></a>老朋友 Ajax</h2>
+<p>传统的写法，无需解释</p>
+<pre><code>// 获取产品数据
+ajax('products.json', (products) =&gt; {
+    console.log('AJAX/products &gt;&gt;&gt;', JSON.parse(products));
+
+    // 获取用户数据
+    ajax('users.json', (users) =&gt; {
+        console.log('AJAX/users &gt;&gt;&gt;', JSON.parse(users));
+
+        // 获取评论数据
+        ajax('products.json', (comments) =&gt; {
+            console.log('AJAX/comments &gt;&gt;&gt;', JSON.parse(comments));
+        });
+    });
+});
+</code></pre>
+<h2><a id="_Promise_23"></a>不算新的朋友 Promise</h2>
+<p>Promise 已经被提及已久了，也是 ES6 的一部分。Promise 能消除 callback hell 带来的厄运金字塔，相比起来代码更清晰了，但还是达不到编写同步代码的直观程度。</p>
+<pre><code>// Promise
+// 封装 Ajax，返回一个 Promise
+function requestP(url) {
+    return new Promise(function(resolve, reject) {
+        ajax(url, (response) =&gt; {
+            resolve(JSON.parse(response));
+        });
+    });
+}
+
+// 获取产品数据
+requestP('products.json').then((products) =&gt; {
+    console.log('Promises/products &gt;&gt;&gt;', products);
+    // 获取用户数据
+    return requestP('users.json');
+}).then((users) =&gt; {
+    console.log('Promises/users &gt;&gt;&gt;', users);
+    // 获取评论数据
+    return requestP('comments.json');
+}).then((comments) =&gt; {
+    console.log('Promises/comments &gt;&gt;&gt;', comments);
+});
+</code></pre>
+<h2><a id="_Generators_50"></a>强劲的新朋友 Generators</h2>
+<p>Generators 也是 ES6 一个新的特性，能够 暂停/执行 代码。yield 表示暂停，iterator.next 表示执行下一步，如果你不了解 Generators 也没关系，可以忽略它直接学习 await/async。</p>
+<pre><code>// Generators
+function request(url) {
+    ajax(url, (response) =&gt; {
+        iterator.next(JSON.parse(response));
+    });
+}
+
+function *main() {
+    // 获取产品数据
+    let data = yield request('products.json');
+
+    // 获取用户数据
+    let users = yield request('users.json');
+
+    // 获取评论数据
+    let products = yield request('comments.json');
+
+    console.log('Generator/products &gt;&gt;&gt;', products);
+    console.log('Generator/users &gt;&gt;&gt;', users);
+    console.log('Generator/comments &gt;&gt;&gt;', comments);
+}
+
+var iterator = main();
+iterator.next();
+</code></pre>
+<h2><a id="_awaitasync_79"></a>碉堡的朋友 await/async</h2>
+<p>与 Promise 结合使用</p>
+<pre><code>// 封装 Ajax，返回一个 Promise
+function requestP(url) {
+    return new Promise(function(resolve, reject) {
+        ajax(url, (response) =&gt; {
+            resolve(JSON.parse(response));
+        });
+    });
+}
+
+(async () =&gt; {
+    // 获取产品数据
+    let data = await requestP('products.json');
+
+     // 获取用户数据
+    let users = await requestP('users.json');
+
+     // 获取评论数据
+    let products = await requestP('comments.json');
+
+    console.log('ES7 Async/products &gt;&gt;&gt;', products);
+    console.log('ES7 Async/users &gt;&gt;&gt;', users);
+    console.log('ES7 Async/comments &gt;&gt;&gt;', comments);
+}());
+</code></pre>
+<p>与 Fetch API 结合使用：</p>
+<pre><code>(async () =&gt; {
+// Async/await using the fetch API
+    try {
+
+         // 获取产品数据
+        let products = await fetch('products.json');
+
+        // Parsing products
+        let parsedProducts = await products.json();
+
+        // 获取用户数据
+        let users = await fetch('users.json');
+
+        // Parsing users
+        let parsedUsers = await users.json();
+
+        // 获取评论数据
+        let comments = await fetch('comments.json');
+
+        // Parsing comments
+        let parsedComments = await comments.json();
+
+
+        console.log('ES7 Async+fetch/products &gt;&gt;&gt;', parsedProducts);
+        console.log('ES7 Async+fetch/users &gt;&gt;&gt;', parsedUsers);
+        console.log('ES7 Async+fetch/comments &gt;&gt;&gt;', parsedComments);
+
+
+    } catch (error) {
+        console.log(error);
+    }
+}());
+</code></pre>
+<p>再次结合 Fetch</p>
+<pre><code>(async () =&gt; {
+    let parallelDataFetch = await* [
+        (await fetch('products.json')).json(),
+        (await fetch('users.json')).json(),
+        (await fetch('comments.json')).json()
+    ];
+    console.log('Async parallel+fetch &gt;&gt;&gt;', parallelDataFetch);
+}());
+</code></pre>
+<p>使用 await/async 用同步的思维去解决异步的代码，感觉非常酷非常爽！<br>
+参考文献[原文]：<a href="https://github.com/jaydson/es7-async">https://github.com/jaydson/es7-async</a></p>
+</div>
+</body>
+
+</html>
