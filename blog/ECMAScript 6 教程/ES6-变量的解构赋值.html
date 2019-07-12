@@ -1,0 +1,287 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ES6-变量的解构赋值</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p></p><div class="toc"><h3>文章目录</h3><ul><ul><li><a href="#_1">数组的解构赋值</a></li><li><a href="#_57">对象的解构赋值</a></li><li><a href="#_80">字符串的解构赋值</a></li><li><a href="#_137">解构赋值的用途</a></li></ul></ul></div><p></p>
+<h2><a id="_1"></a>数组的解构赋值</h2>
+<ul>
+<li>
+<p><strong>Destructuring</strong><br>
+ES6允许按照一定模式，从数组和对象中提取值，对变量进行赋值，这被称为解构（Destructuring） 。</p>
+<pre><code>var [p, q = "aaa"] = ["bbb", undefined]
+console.log(p, q) // bbb aaa
+var [temp = "string"] = ["tempString"]
+console.log(temp) // tempString
+</code></pre>
+</li>
+<li>
+<p><strong>不完全解构</strong><br>
+等号左边的模式，只匹配一部分的等号右边的数组。</p>
+</li>
+<li>
+<p><strong>指定默认值</strong><br>
+注意：ES6内部使用严格相等运算符（===）判断一个位置是否有值。所以，如果一个数组成员不严格等于undefined，默认值是不会生效的。</p>
+<pre><code>var [p, q = "aaa"] = ["bbb", undefined]
+console.log(p, q)
+var [temp = "string"] = ["tempString"]
+console.log(temp)
+</code></pre>
+</li>
+<li>
+<p><strong>let和const命令</strong><br>
+只要某种数据结构具有Iterator接口，都可以采用数组形式的解构赋值。</p>
+<pre><code>let [a, b, c] = new Set(["a", "b", "c"]);
+console.log(a)  // a
+console.log(b)  // b
+console.log(c)  // c
+
+function* fibs() {
+	let a = 0;
+	let b = 1;
+	while (true){
+		yield a;
+		[a, b] = [b, a + b];
+	}
+}
+var [first, second, third, fourth, fifth, sixth] = fibs()
+console.log(sixth)  // 5
+</code></pre>
+</li>
+<li>
+<p><strong>非遍历解构–报错</strong></p>
+<pre><code>//var [temp] = 1; 			//TypeError: 1[Symbol.iterator] is not a function
+//var [temp] = false;		//TypeError: false[Symbol.iterator] is not a function
+//var [temp] = NaN;			//TypeError: NaN[Symbol.iterator] is not a function
+//var [temp] = undefined;	//TypeError: Cannot read property 'Symbol(Symbol.iterator)' of undefined
+var [temp] = null;			//TypeError: Cannot read property 'Symbol(Symbol.iterator)' of object
+</code></pre>
+</li>
+</ul>
+<hr>
+<h2><a id="_57"></a>对象的解构赋值</h2>
+<ul>
+<li>
+<p><strong>解构不仅可以用于数组，还可以用于对象</strong><br>
+对象的属性没有次序，变量必须与属性同名，才能取到正确的值。</p>
+<pre><code></code></pre>
+</li>
+</ul>
+<p>var { name, age, id} = { id:“007”,  name:“lenhart”, age:111 }<br>
+console.log(name,age,id)    // lenhart 111 007<br>
+```</p>
+<ul>
+<li>
+<p><strong>指定默认值</strong><br>
+默认值生效的条件是，对象的属性值严格等于undefined。</p>
+</li>
+<li>
+<p><strong>现有对象的方法</strong><br>
+对象的解构赋值，可以很方便地将现有对象的方法，赋值到某个变量</p>
+<pre><code>console .log(Math.sin(Math.PI/6))   // 0.49999999999999994
+
+let { sin, cos, tan, PI } = Math;
+console.log(sin(Math.PI/6))         //0.49999999999999994
+console.log(sin(PI/6))              //0.49999999999999994
+</code></pre>
+</li>
+</ul>
+<h2><a id="_80"></a>字符串的解构赋值</h2>
+<ul>
+<li>
+<p><strong>字符串也可以解构赋值</strong><br>
+字符串被转换成了一个类似数组的对象。</p>
+<pre><code>const [ a, b, c, d, e ] = "Hello";
+console.log(a)  //H
+console.log(b)  //e
+console.log(c)  //l
+console.log(d)  //l
+console.log(e)  //o
+</code></pre>
+</li>
+<li>
+<p><strong>属性解构赋值</strong><br>
+类似数组的对象都有一个length属性，因此还可以对这个属性解构赋值。</p>
+<pre><code>const { length: len } = "Hello";
+console.log(len)    //5
+
+const { length } = "Hello World"
+console.log(length) //12
+</code></pre>
+</li>
+</ul>
+<p>##函数参数的解构赋值</p>
+<ul>
+<li>
+<p><strong>函数的参数也可以使用解构。</strong></p>
+<pre><code>function sum([x, y]) {
+    return x + y;
+}
+console.log(sum([1, 2]))
+</code></pre>
+</li>
+<li>
+<p><strong>函数参数的解构也可以使用默认值。</strong></p>
+<pre><code> function sum([x, y]) {
+    return x + y;
+}
+console.log(sum([1, 2])) // 3
+</code></pre>
+</li>
+<li>
+<p><strong>函数参数解构赋值的默认值为undefined的时候</strong></p>
+<pre><code>function fun({x, y} = {x: 0, y:0}) {
+    return [x, y]
+}
+console.log(fun({x: 100, y: 200}))  //[100, 200] 在传参的时候进行解构赋值
+console.log(fun({x: 100}))          //[100, undefined] 没有传入的参数就是undefined
+console.log(fun({}))          //[undefined, undefined] 没有传入的参数就是undefined
+console.log(fun())          //[0, 0] 没有在函数参数中进行解构赋值，而是在函数内部进行了解构赋值
+</code></pre>
+</li>
+</ul>
+<h2><a id="_137"></a>解构赋值的用途</h2>
+<ul>
+<li>
+<p><strong>交换变量的值</strong></p>
+<pre><code>// ES6
+console.log("ES6:");
+var x = 100;
+var y = 200;
+console.log("交换前：");
+console.log("a = " + x);
+console.log("b = " + y);
+[ x, y ] = [ y, x ];
+console.log("交换后：");
+console.log("a = " + x);
+console.log("b = " + y);
+</code></pre>
+</li>
+<li>
+<p><strong>从函数返回多个值</strong></p>
+<pre><code>function fun() {
+    return [1, 2, 3];
+}
+
+var [x, y, z] = fun();
+console.log(x); //1
+console.log(y); //2
+console.log(z); //3
+</code></pre>
+</li>
+<li>
+<p><strong>函数参数的定义</strong></p>
+<pre><code>function fun([x, y, z]) {
+    //  x = 100
+    //  y = 200
+    //  z = 300
+}
+fun([100, 200, 300]);
+
+//  参数是一组无次序的值
+function fun({id, name, age}) {
+    //  id   = "110119911"
+    //  name = "Lenhart"
+    //  age = 24
+
+}
+fun({id: "110119911", name: "Lenhart", age: 24})
+</code></pre>
+</li>
+<li>
+<p><strong>提取Json数据</strong></p>
+<pre><code class="prism language-javascript"><span class="token keyword">var</span> jsonData <span class="token operator">=</span> <span class="token punctuation">{</span>
+        id<span class="token punctuation">:</span> <span class="token string">"110119911"</span><span class="token punctuation">,</span>
+        name<span class="token punctuation">:</span> <span class="token string">"Lenhart"</span><span class="token punctuation">,</span>
+        age<span class="token punctuation">:</span> <span class="token number">24</span><span class="token punctuation">,</span>
+        score<span class="token punctuation">:</span> <span class="token punctuation">{</span>
+            Chinese<span class="token punctuation">:</span> <span class="token number">107</span><span class="token punctuation">,</span>
+            Math<span class="token punctuation">:</span> <span class="token number">97</span><span class="token punctuation">,</span>
+            Engilsh<span class="token punctuation">:</span> <span class="token number">119</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span><span class="token punctuation">;</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span>jsonData<span class="token punctuation">)</span>
+
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"ES5:"</span><span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's number is:"</span> <span class="token operator">+</span> jsonData<span class="token punctuation">.</span>id<span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's name is:"</span> <span class="token operator">+</span> jsonData<span class="token punctuation">.</span>name<span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's age is:"</span> <span class="token operator">+</span> jsonData<span class="token punctuation">.</span>age<span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's Chinese is:"</span> <span class="token operator">+</span> jsonData<span class="token punctuation">.</span>score<span class="token punctuation">.</span>Chinese<span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's Math is:"</span> <span class="token operator">+</span> jsonData<span class="token punctuation">.</span>score<span class="token punctuation">.</span>Math<span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's Engilsh is:"</span> <span class="token operator">+</span> jsonData<span class="token punctuation">.</span>score<span class="token punctuation">.</span>Engilsh<span class="token punctuation">)</span>
+
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"ES6:"</span><span class="token punctuation">)</span>
+<span class="token keyword">let</span> <span class="token punctuation">{</span> id<span class="token punctuation">:</span> number<span class="token punctuation">,</span> name<span class="token punctuation">,</span> age<span class="token punctuation">,</span> score<span class="token punctuation">:</span> score<span class="token punctuation">}</span> <span class="token operator">=</span> jsonData<span class="token punctuation">;</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's number is:"</span> <span class="token operator">+</span> number<span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's name is:"</span> <span class="token operator">+</span> name<span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's age is:"</span> <span class="token operator">+</span> age<span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's score is:"</span> <span class="token operator">+</span> score<span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's Engilsh is:"</span> <span class="token operator">+</span> score<span class="token punctuation">.</span>Engilsh<span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's Chinese is:"</span> <span class="token operator">+</span> score<span class="token punctuation">.</span>Chinese<span class="token punctuation">)</span>
+console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">"Person's Math is:"</span> <span class="token operator">+</span> score<span class="token punctuation">.</span>Math<span class="token punctuation">)</span>
+</code></pre>
+</li>
+<li>
+<p><strong>函数参数的默认值</strong></p>
+<pre><code class="prism language-javascript"> jQuery<span class="token punctuation">.</span><span class="token function-variable function">ajax</span> <span class="token operator">=</span> <span class="token keyword">function</span> <span class="token punctuation">(</span>url<span class="token punctuation">,</span><span class="token punctuation">{</span>
+    <span class="token keyword">async</span> <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token function-variable function">beforeSend</span> <span class="token operator">=</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+    cache <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token function-variable function">complete</span> <span class="token operator">=</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span><span class="token punctuation">}</span><span class="token punctuation">,</span>
+    crossDomain <span class="token operator">=</span> <span class="token boolean">false</span><span class="token punctuation">,</span>
+    global <span class="token operator">=</span> <span class="token boolean">true</span><span class="token punctuation">,</span>
+    <span class="token comment">// ...more config</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token comment">// ...do stuff</span>
+<span class="token punctuation">}</span>
+<span class="token comment">// 避免了在函数体内部再写 var foo = config.foo || 'default foo' 这样的语句</span>
+</code></pre>
+</li>
+<li>
+<p><strong>遍历Map结构</strong></p>
+<pre><code>var map = new Map();
+map.set("id", "110119911");
+map.set("name", "Lenhart");
+
+console.log(map);
+console.log(typeof(map));
+
+// 获取键名和键值
+for (let [key, value] of map) {
+    console.log(key + " is " + value);
+}
+// id is 110119911
+// name is Lenhart
+
+// 获取键名
+for (let [key] of map) {
+    console.log(key);
+}
+// id
+// name
+
+// 获取键值
+for (let [ , value] of map) {
+    console.log(value);
+}
+// 110119911
+// Lenhart
+</code></pre>
+</li>
+<li>
+<p><strong>输入模块的指定方法</strong><br>
+输入的模块一般是不会变动的，最好使用 <strong>const</strong> 来定义</p>
+<pre><code>const {SourceMapConsumer, SourceNode} = require("source-map");
+</code></pre>
+</li>
+</ul>
+</div>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ES6 let和const命令</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1><a id="let_0"></a>let命令</h1>
+<h3>1.基本用法</h3>
+<p>  ES6新增了<strong>let</strong>命令，用来声明变量。它的用法类似于var，但是所声明的变量，只在let命令所在的<strong>代码块内</strong>有效。</p>
+<h3>2.不存在变量提升</h3>
+<p>  let不像var那样，会发生“变量提升”现象。</p>
+<h3>3.暂时性死区</h3>
+<p>  只要块级作用域内存在let命令，它所声明的变量就“绑定”（binding）这个区域，不再受外部的影响。</p>
+<h3>4.不允许重复声明</h3>
+  let不允许在相同作用域内，重复声明同一个变量。
+<h1><a id="_19"></a>块级作用域</h1>
+<h3></h3>
+<p></p>
+<h3>1.为什么需要块级作用域？</h3>
+<p>ES5只有全局作用域和函数作用域，没有块级作用域，这带来很多不合理的场景。第一种场景，内层变量可能会覆盖外层变量。第二种场景，用来计数的循环变量泄露为全局变量。</p>
+<h3>2.ES6的块级作用域</h3>
+<p>let实际上为JavaScript新增了块级作用域。</p>
+const命令
+==
+**const**也用来声明变量，但是声明的是常量。
+<p>一旦声明，常量的值就不能改变。</p>
+<h1><a id="_35"></a>跨模块常量</h1>
+<p>const声明的常量只在<strong>当前代码块有效</strong>。</p>
+<p>如果想设置跨模块的常量，应该怎么办呢？</p>
+<h1><a id="_41"></a>全局对象的属性</h1>
+<p>  全局对象是最顶层的对象，在浏览器环境指的是<strong>window</strong>对象，在<strong>Node.js</strong>指的是<strong>global</strong>对象。在<strong>JavaScript</strong>语言中，所有全局变量都是全局对象的属性。（<strong>Node</strong>的情况比较特殊，这一条只对<strong>REPL</strong>环境适用，模块环境必须显式声明成<strong>global</strong>的属性。）</p>
+<p>  <strong>ES6</strong>规定，<strong>var</strong>命令和<strong>function</strong>命令声明的全局变量，属于全局对象的属性；<strong>let</strong>命令、<strong>const</strong>命令、<strong>class</strong>命令声明的全局变量，不属于全局对象的属性。</p>
+</div>
+</body>
+
+</html>

@@ -1,0 +1,289 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CommonJS,RequireJS,ES6的对比</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><p></p><div class="toc"><h3>文章目录</h3><ul><ul><li><a href="#CommonJS_8">一.CommonJS</a></li><ul><li><a href="#1_16">1.定义模块</a></li><li><a href="#2_27">2.加载模块</a></li><li><a href="#3_46">3.模块缓存</a></li><li><a href="#AMD_52">二.AMD</a></li><li><a href="#1_58">1.定义模块</a></li><li><a href="#2_63">2.独立模块</a></li><li><a href="#3_74">3.非独立模块</a></li><li><a href="#5_116">5.配置</a></li><li><a href="#6_147">6.使用</a></li></ul><li><a href="#ES6_Module_170">三.ES6 Module</a></li><ul><li><a href="#1_181">1.定义模块</a></li><li><a href="#2_210">2.重命名模块</a></li><li><a href="#3_222">3.导出默认值</a></li><li><a href="#4_240">4.加载模块</a></li><li><a href="#5_252">5.导入单个绑定</a></li><li><a href="#6_258">6.导入多个绑定</a></li><li><a href="#7_264">7.完全导入一个模块</a></li><li><a href="#8_285">8.重命名导入</a></li><li><a href="#9_291">9.导入默认值</a></li><li><a href="#9_316">9.导入的再导出</a></li><li><a href="#10_337">10.限制</a></li></ul><li><a href="#_340">参考链接</a></li></ul></ul></div><br>
+<strong>文件路径</strong><br>
+首先先搞清楚文件路径的写法，这里我总是记不住，有点晕，正好这次整理一下。<p></p>
+<blockquote>
+<ul>
+<li>以 / 为起始，表示从根目录开始解析；</li>
+<li>以 ./ 为起始，表示从当前目录开始解析；</li>
+<li>以 …/ 为起始，表示从上级目录开始解析.</li>
+</ul>
+</blockquote>
+<h2><a id="CommonJS_8"></a>一.CommonJS</h2>
+<blockquote>
+<p>CommonJS是nodejs也就是服务器端广泛使用的模块化机制。<br>
+该规范的主要内容是，模块必须通过module.exports 导出对外的变量或接口，通过 require() 来导入其他模块的输出到当前模块作用域中。</p>
+</blockquote>
+<p>根据这个规范，每个文件就是一个模块，有自己的作用域，文件中的变量、函数、类等都是对其他文件不可见的。</p>
+<p>如果想在多个文件分享变量，必须定义为global对象的属性。（不推荐）</p>
+<h3><a id="1_16"></a>1.定义模块</h3>
+<p>在每个模块内部，module变量代表当前模块。它的exports属性是对外的接口，将模块的接口暴露出去。其他文件加载该模块，实际上就是读取module.exports变量。</p>
+<pre><code class="prism language-javascript"><span class="token keyword">var</span> x <span class="token operator">=</span> <span class="token number">5</span><span class="token punctuation">;</span>
+<span class="token keyword">var</span> <span class="token function-variable function">addX</span> <span class="token operator">=</span> <span class="token keyword">function</span> <span class="token punctuation">(</span>value<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token keyword">return</span> value <span class="token operator">+</span> x<span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">;</span>
+module<span class="token punctuation">.</span>exports<span class="token punctuation">.</span>x <span class="token operator">=</span> x<span class="token punctuation">;</span>
+module<span class="token punctuation">.</span>exports<span class="token punctuation">.</span>addX <span class="token operator">=</span> addX<span class="token punctuation">;</span>
+</code></pre>
+<h3><a id="2_27"></a>2.加载模块</h3>
+<p>require方法用于加载模块，后缀名默认为.js</p>
+<pre><code class="prism language-javascript"><span class="token keyword">var</span> app <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'./app.js'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>模块加载的顺序，按照其在代码中出现的顺序</p>
+<p>根据参数的不同格式，require命令去不同路径寻找模块文件。</p>
+<ul>
+<li>如果参数字符串以“/”开头，则表示加载的是一个位于绝对路径的模块文件。</li>
+<li>如果参数字符串以“./”开头，则表示加载的是一个位于相对路径的模块文件</li>
+<li>如果参数字符串不以“./“或”/“开头，则表示加载的是一个默认提供的核心模块（node核心模块，或者通过全局安装或局部安装在node_modules目录中的模块）<br>
+入口文件<br>
+一般都会有一个主文件（入口文件），在index.html中加载这个入口文件，然后在这个入口文件中加载其他文件。</li>
+</ul>
+<p>可以通过在package.json中配置main字段来指定入口文件。</p>
+<h3><a id="3_46"></a>3.模块缓存</h3>
+<p>第一次加载某个模块时，Node会缓存该模块。以后再加载该模块，就直接从缓存取出该模块的module.exports属性。</p>
+<p>加载机制<br>
+CommonJS模块的加载机制是，输入的是被输出的值的拷贝。也就是说，一旦输出一个值，模块内部的变化就影响不到这个值。</p>
+<h3><a id="AMD_52"></a>二.AMD</h3>
+<p>AMD（异步模块定义）是为浏览器环境设计的，因为 CommonJS 模块系统是同步加载的，当前浏览器环境还没有准备好同步加载模块的条件。</p>
+<p>requirejs即为遵循AMD规范的模块化工具。<br>
+RequireJS的基本思想是，通过define方法，将代码定义为模块；通过require方法，实现代码的模块加载。</p>
+<h3><a id="1_58"></a>1.定义模块</h3>
+<p>define方法用于定义模块，RequireJS要求每个模块放在一个单独的文件里。</p>
+<p>按照是否依赖其他模块，可以分成两种情况讨论。第一种情况是定义独立模块，即所定义的模块不依赖其他模块；第二种情况是定义非独立模块，即所定义的模块依赖于其他模块。</p>
+<h3><a id="2_63"></a>2.独立模块</h3>
+<pre><code class="prism language-javascript"><span class="token function">define</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+    ……
+    <span class="token keyword">return</span> <span class="token punctuation">{</span>
+        <span class="token comment">//返回接口</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre>
+<p>define定义的模块可以返回任何值，不限于对象。</p>
+<h3><a id="3_74"></a>3.非独立模块</h3>
+<pre><code class="prism language-javascript"><span class="token function">define</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'module1'</span><span class="token punctuation">,</span><span class="token string">'module2'</span><span class="token punctuation">]</span><span class="token punctuation">,</span><span class="token keyword">function</span><span class="token punctuation">(</span>m1<span class="token punctuation">,</span>m2<span class="token punctuation">)</span><span class="token punctuation">{</span>
+    ……
+    <span class="token keyword">return</span> <span class="token punctuation">{</span>
+        <span class="token comment">//返回接口</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+<span class="token template-string"><span class="token string">``</span></span><span class="token template-string"><span class="token string">`javascript
+要定义的模块依赖于module1和module2，那么第一个参数就是依赖的模块的数组。 
+第二个参数是一个函数，仅当依赖的模块都加载成功后才会被调用。此函数的参数m1，m2与前面数组中的依赖模块一一对应。
+
+此模块必须返回一个对象，供其他模块调用。
+
+### 4.加载模块
+同样使用require（）方法来加载模块，但由于是异步的，因此使用回调函数的形式。
+`</span></span><span class="token template-string"><span class="token string">``</span></span>javascript
+<span class="token function">require</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token string">'foo'</span><span class="token punctuation">,</span><span class="token string">'bar'</span><span class="token punctuation">]</span><span class="token punctuation">,</span><span class="token keyword">function</span><span class="token punctuation">(</span>foo<span class="token punctuation">,</span>bar<span class="token punctuation">)</span><span class="token punctuation">{</span>
+    ……
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre>
+<p>上面方法表示加载foo和bar两个模块，当这两个模块都加载成功后，执行一个回调函数。该回调函数就用来完成具体的任务。</p>
+<p>require方法也可以用在define方法内部。</p>
+<pre><code class="prism language-javascript"><span class="token function">define</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span>require<span class="token punctuation">)</span><span class="token punctuation">{</span>
+     <span class="token keyword">var</span> otherModule <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">'otherModule'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre>
+<p>require方法允许添加第三个参数，即错误处理的回调函数。</p>
+<pre><code class="prism language-javascript"><span class="token function">require</span><span class="token punctuation">(</span>
+    <span class="token punctuation">[</span> <span class="token string">"backbone"</span> <span class="token punctuation">]</span><span class="token punctuation">,</span> 
+    <span class="token keyword">function</span> <span class="token punctuation">(</span> Backbone <span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">return</span> Backbone<span class="token punctuation">.</span>View<span class="token punctuation">.</span><span class="token function">extend</span><span class="token punctuation">(</span><span class="token punctuation">{</span> <span class="token comment">/* ... */</span> <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span> 
+    <span class="token keyword">function</span> <span class="token punctuation">(</span>err<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token comment">// ...</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<h3><a id="5_116"></a>5.配置</h3>
+<p>require方法本身也是一个对象，它带有一个config方法，用来配置require.js运行参数。</p>
+<pre><code class="prism language-javascript">require<span class="token punctuation">.</span><span class="token function">config</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    paths<span class="token punctuation">:</span> <span class="token punctuation">{</span>
+        jquery<span class="token punctuation">:</span><span class="token string">'lib/jquery'</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>paths：paths参数指定各个模块的位置。这个位置可以是同一个服务器上的相对位置，也可以是外部网址。可以为每个模块定义多个位置，如果第一个位置加载失败，则加载第二个位置。上面就是指定了jquery的位置，那么就可以直接在文件中require（[‘jquery’],function($){}）</p>
+<p>shim：有些库不是AMD兼容的，这时就需要指定shim属性的值。shim可以理解成“垫片”，用来帮助require.js <strong>加载非AMD规范的库</strong></p>
+<pre><code class="prism language-javascript">require<span class="token punctuation">.</span><span class="token function">config</span><span class="token punctuation">(</span><span class="token punctuation">{</span>
+    paths<span class="token punctuation">:</span> <span class="token punctuation">{</span>
+        <span class="token string">"backbone"</span><span class="token punctuation">:</span> <span class="token string">"vendor/backbone"</span><span class="token punctuation">,</span>
+        <span class="token string">"underscore"</span><span class="token punctuation">:</span> <span class="token string">"vendor/underscore"</span>
+    <span class="token punctuation">}</span><span class="token punctuation">,</span>
+    shim<span class="token punctuation">:</span> <span class="token punctuation">{</span>
+        <span class="token string">"backbone"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+            deps<span class="token punctuation">:</span> <span class="token punctuation">[</span> <span class="token string">"underscore"</span> <span class="token punctuation">]</span><span class="token punctuation">,</span>
+            exports<span class="token punctuation">:</span> <span class="token string">"Backbone"</span>
+        <span class="token punctuation">}</span><span class="token punctuation">,</span>
+        <span class="token string">"underscore"</span><span class="token punctuation">:</span> <span class="token punctuation">{</span>
+            exports<span class="token punctuation">:</span> <span class="token string">"_"</span>
+        <span class="token punctuation">}</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<h3><a id="6_147"></a>6.使用</h3>
+<p>在主页面index.html中先通过script标签引入require.min.js。<br>
+再通过script标签引入一个入口文件main.js，此入口文件一般用于配置（require.config），以及引入其他模块。</p>
+<p>CommonJS与AMD<br>
+CommonJS规范加载模块是同步的，也就是说，只有加载完成，才能执行后面的操作。<br>
+AMD规范则是异步加载模块，允许指定回调函数，在回调函数中执行操作。<br>
+由于Node.js主要用于服务器编程，模块文件一般都已经存在于本地硬盘，所以加载起来比较快，不用考虑非同步加载的方式，所以CommonJS规范比较适用。但是，如果是浏览器环境，要从服务器端加载模块，这时就必须采用非同步模式，因此浏览器端一般采用AMD规范。</p>
+<p>AMD规范允许输出的模块兼容CommonJS规范，这时define方法需要写成下面这样：</p>
+<pre><code class="prism language-javascript"><span class="token function">define</span><span class="token punctuation">(</span><span class="token keyword">function</span><span class="token punctuation">(</span>require<span class="token punctuation">,</span>exports<span class="token punctuation">,</span>module<span class="token punctuation">)</span><span class="token punctuation">{</span>
+    <span class="token keyword">var</span> someModule <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">"someModule"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">var</span> anotherModule <span class="token operator">=</span> <span class="token function">require</span><span class="token punctuation">(</span><span class="token string">"anotherModule"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    ……
+    exports<span class="token punctuation">.</span><span class="token function-variable function">asplode</span> <span class="token operator">=</span> <span class="token keyword">function</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">{</span>
+
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span><span class="token punctuation">)</span>
+</code></pre>
+<h2><a id="ES6_Module_170"></a>三.ES6 Module</h2>
+<p>ES6正式提出了内置的模块化语法，我们在浏览器端无需额外引入requirejs来进行模块化。</p>
+<p>ES6中的模块有以下特点：</p>
+<ul>
+<li>模块自动运行在严格模式下</li>
+<li>在模块的顶级作用域创建的变量，不会被自动添加到共享的全局作用域，它们只会在模块顶级作用域的内部存在；</li>
+<li>模块顶级作用域的 this 值为 undefined</li>
+<li>对于需要让模块外部代码访问的内容，模块必须导出它们</li>
+</ul>
+<h3><a id="1_181"></a>1.定义模块</h3>
+<p>使用export关键字将任意变量、函数或者类公开给其他模块。</p>
+<pre><code class="prism language-javascript"><span class="token comment">//导出变量</span>
+<span class="token keyword">export</span> <span class="token keyword">var</span> color <span class="token operator">=</span> <span class="token string">"red"</span><span class="token punctuation">;</span>
+<span class="token keyword">export</span> <span class="token keyword">let</span> name <span class="token operator">=</span> <span class="token string">"cz"</span><span class="token punctuation">;</span>
+<span class="token keyword">export</span> <span class="token keyword">const</span> age <span class="token operator">=</span> <span class="token number">25</span><span class="token punctuation">;</span>
+
+<span class="token comment">//导出函数</span>
+<span class="token keyword">export</span> <span class="token keyword">function</span> <span class="token function">add</span><span class="token punctuation">(</span>num1<span class="token punctuation">,</span>num2<span class="token punctuation">)</span><span class="token punctuation">{</span>
+    <span class="token keyword">return</span> num1<span class="token operator">+</span>num2<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">//导出类</span>
+<span class="token keyword">export</span> <span class="token keyword">class</span> <span class="token class-name">Rectangle</span> <span class="token punctuation">{</span>
+    <span class="token function">constructor</span><span class="token punctuation">(</span>length<span class="token punctuation">,</span> width<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>length <span class="token operator">=</span> length<span class="token punctuation">;</span>
+        <span class="token keyword">this</span><span class="token punctuation">.</span>width <span class="token operator">=</span> width<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">function</span> <span class="token function">multiply</span><span class="token punctuation">(</span>num1<span class="token punctuation">,</span> num2<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> num1 <span class="token operator">*</span> num2<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment">//导出对象，即导出引用</span>
+<span class="token keyword">export</span> <span class="token punctuation">{</span>multiply<span class="token punctuation">}</span>
+</code></pre>
+<h3><a id="2_210"></a>2.重命名模块</h3>
+<p>重命名想导出的变量、函数或类的名称</p>
+<pre><code class="prism language-javascript"><span class="token keyword">function</span> <span class="token function">sum</span><span class="token punctuation">(</span>num1<span class="token punctuation">,</span> num2<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> num1 <span class="token operator">+</span> num2<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token punctuation">{</span>sum <span class="token keyword">as</span> add<span class="token punctuation">}</span>
+</code></pre>
+<p>这里将本地的sum函数重命名为add导出，因此在使用此模块的时候必须使用add这个名称。</p>
+<h3><a id="3_222"></a>3.导出默认值</h3>
+<p>模块的默认值是使用 default 关键字所指定的单个变量、函数或类，而你在每个模块中只能设置一个默认导出。</p>
+<pre><code class="prism language-javascript"><span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span><span class="token punctuation">(</span>num1<span class="token punctuation">,</span> num2<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> num1 <span class="token operator">+</span> num2<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>此模块将一个函数作为默认值进行了导出， default 关键字标明了这是一个默认导出。此函数并不需要有名称，因为它就代表这个模块自身。对比最前面使用export导出的函数，并不是匿名函数而是必须有一个名称用于加载模块的时候使用，但是默认导出则无需一个名字，因为模块名就代表了这个导出值。</p>
+<p>也可以使用重命名语法来导出默认值。</p>
+<pre><code class="prism language-javascript"><span class="token keyword">function</span> <span class="token function">sum</span><span class="token punctuation">(</span>num1<span class="token punctuation">,</span> num2<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> num1 <span class="token operator">+</span> num2<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+<span class="token keyword">export</span> <span class="token punctuation">{</span> sum <span class="token keyword">as</span> <span class="token keyword">default</span> <span class="token punctuation">}</span><span class="token punctuation">;</span>
+</code></pre>
+<h3><a id="4_240"></a>4.加载模块</h3>
+<p>在模块中使用import关键字来导入其他模块。<br>
+import 语句有两个部分，一是需要导入的标识符，二是需导入的标识符的来源模块。此处是导入语句的基本形式：</p>
+<pre><code class="prism language-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> identifier1<span class="token punctuation">,</span>identifier2 <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"./example.js"</span>
+</code></pre>
+<ul>
+<li>大括号中指定了从给定模块导入的标识符</li>
+<li>from指明了需要导入的模块。模块由一个表示模块路径的字符串来指定。</li>
+</ul>
+<p>当从模块导入了一个绑定时，你不能在当前文件中再定义另一个同名变量（包括导入另一个同名绑定），也不能在对应的 import 语句之前使用此标识符，更不能修改它的值。</p>
+<h3><a id="5_252"></a>5.导入单个绑定</h3>
+<p>如果一个模块只导出了一个函数（或变量或类），或者导出了多个接口但是只选择导入其中的一个，那么就可以写成下面单个导入的模式：</p>
+<pre><code class="prism language-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span>sum<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./example.js'</span>
+</code></pre>
+<h3><a id="6_258"></a>6.导入多个绑定</h3>
+<p>从一个模块中导入多个绑定：</p>
+<pre><code class="prism language-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span>sum<span class="token punctuation">,</span>multiply<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./example.js'</span>
+</code></pre>
+<h3><a id="7_264"></a>7.完全导入一个模块</h3>
+<p>还有一种情况，就是将整个模块当做单一对象导入，该模块的所有导出都会作为对象的属性存在：</p>
+<pre><code class="prism language-javascript"><span class="token keyword">import</span> <span class="token operator">*</span> <span class="token keyword">as</span> example <span class="token keyword">from</span> <span class="token string">'./example.js'</span>
+example<span class="token punctuation">.</span><span class="token function">sum</span><span class="token punctuation">(</span><span class="token number">1</span><span class="token punctuation">,</span><span class="token number">2</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+example<span class="token punctuation">.</span><span class="token function">multiply</span><span class="token punctuation">(</span><span class="token number">2</span><span class="token punctuation">,</span><span class="token number">3</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<p>在此代码中， example.js 中所有导出的绑定都被加载到一个名为 example 的对象中，具名导出（ sum() 函数、 multiple() 函数）都成为 example 的可用属性。<br>
+这种导入格式被称为命名空间导入，这是因为该 example 对象并不存在于 example.js 文件中，而是作为一个命名空间对象被创建使用，其中包含了 example.js 的所有导出成员。</p>
+<blockquote>
+<p>然而要记住，无论你对同一个模块使用了多少次 import 语句，该模块都只会被执行一次。</p>
+</blockquote>
+<p>在导出模块的代码执行之后，已被实例化的模块就被保留在内存中，并随时都能被其他 import 所引用.</p>
+<pre><code class="prism language-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> sum <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"./example.js"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> multiply <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"./example.js"</span><span class="token punctuation">;</span>
+<span class="token keyword">import</span> <span class="token punctuation">{</span> magicNumber <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"./example.js"</span><span class="token punctuation">;</span>
+</code></pre>
+<p>尽管此处的模块使用了三个 import 语句，但 example.js 只会被执行一次。若同一个应用中的其他模块打算从 example.js 导入绑定，则那些模块都会使用这段代码中所用的同一个模块实例。</p>
+<h3><a id="8_285"></a>8.重命名导入</h3>
+<p>与导出相同，我们同样可以重命名导入的绑定：</p>
+<pre><code class="prism language-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span> sum <span class="token keyword">as</span> add<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./example.js'</span>
+</code></pre>
+<h3><a id="9_291"></a>9.导入默认值</h3>
+<p>如果一个模块导出了默认值，那么可以这样导入默认值：</p>
+<pre><code class="prism language-javascript"><span class="token keyword">import</span> sum <span class="token keyword">from</span> <span class="token string">"./example.js"</span><span class="token punctuation">;</span>
+</code></pre>
+<p>这个导入语句从 example.js 模块导入了其默认值。注意此处并未使用花括号，与之前在非默认的导入中看到的不同。本地名称 sum 被用于代表目标模块所默认导出的函数，因此无需使用花括号。</p>
+<p>如果一个模块既导出了默认值、又导出了一个或更多非默认的绑定的模块：</p>
+<pre><code class="prism language-javascript"><span class="token keyword">export</span> <span class="token keyword">let</span> color <span class="token operator">=</span> <span class="token string">"red"</span><span class="token punctuation">;</span>
+
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token keyword">function</span><span class="token punctuation">(</span>num1<span class="token punctuation">,</span> num2<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+    <span class="token keyword">return</span> num1 <span class="token operator">+</span> num2<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<p>可以像下面这样使用一条import语句来导入它的所有导出绑定：</p>
+<pre><code class="prism language-javascript"><span class="token keyword">import</span> sum<span class="token punctuation">,</span><span class="token punctuation">{</span>color<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"./example.js"</span>
+</code></pre>
+<p>逗号将默认的本地名称与非默认的名称分隔开，后者仍旧被花括号所包裹。<br>
+要记住在 import 语句中默认名称必须位于非默认名称之前。</p>
+<h3><a id="9_316"></a>9.导入的再导出</h3>
+<p>有时想在当前的模块中将已导入的内容再导出去，可以像下面这样写：</p>
+<pre><code class="prism language-javascript"><span class="token keyword">import</span> <span class="token punctuation">{</span>sum<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./example.js'</span>
+……
+<span class="token keyword">export</span> <span class="token punctuation">{</span>sum<span class="token punctuation">}</span>
+</code></pre>
+<p>但是有一种更简洁的方法：</p>
+<pre><code class="prism language-javascript"><span class="token keyword">export</span> <span class="token punctuation">{</span>sum<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'./example.js'</span>
+</code></pre>
+<p>同样可以重命名：</p>
+<pre><code class="prism language-javascript"><span class="token keyword">export</span> <span class="token punctuation">{</span> sum <span class="token keyword">as</span> add <span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">"./example.js"</span><span class="token punctuation">;</span>
+</code></pre>
+<p>也可以使用完全导出：</p>
+<pre><code class="prism language-javascript"><span class="token keyword">export</span> <span class="token operator">*</span> <span class="token keyword">from</span> <span class="token string">"./example.js"</span><span class="token punctuation">;</span>
+</code></pre>
+<h3><a id="10_337"></a>10.限制</h3>
+<p>export 与 import 都有一个重要的限制，那就是它们必须被用在其他语句或表达式的外部，而不能使用在if等代码块内部。原因之一是模块语法需要让 JS 能静态判断需要导出什么，正因为此，你只能在模块的顶级作用域使用 export与import。</p>
+<h2><a id="_340"></a>参考链接</h2>
+<p>[1] <a href="https://blog.csdn.net/crystal6918/article/details/74906757/">https://blog.csdn.net/crystal6918/article/details/74906757/</a></p>
+</div>
+</body>
+
+</html>

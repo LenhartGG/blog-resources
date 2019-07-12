@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ES6---箭头函数()&#x3D;&gt;{} 与function的区别</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h2><a id="1function_0"></a>1.箭头函数与function定义函数的写法：</h2>
+<pre><code>//function
+function fn(a, b){
+	return a + b;
+}
+//arrow function
+var foo = (a, b)=&gt;{ return a + b };
+</code></pre>
+<h2><a id="2this_10"></a>2.this的指向：</h2>
+<p>使用<strong>function</strong>定义的函数，this的指向随着调用环境的变化而<strong>变化的</strong>，而<strong>箭头函数</strong>中的this指向是<strong>固定不变的</strong>，一直指向的是定义函数的环境。</p>
+<pre><code>//使用function定义的函数
+function foo(){
+	console.log(this);
+}
+var obj = { aa: foo };
+foo(); //Window
+obj.aa() //obj { aa: foo }
+</code></pre>
+<blockquote>
+<p>使用function定义的函数中this指向是随着调用环境的变化而变化的</p>
+</blockquote>
+<pre><code>//使用箭头函数定义函数
+var foo = () =&gt; { console.log(this) };
+var obj = { aa:foo };
+foo(); //Window
+obj.aa(); //Window
+</code></pre>
+<blockquote>
+<p>明显使用箭头函数的时候，this的指向是没有发生变化的。</p>
+</blockquote>
+<h2><a id="3_33"></a>3.构造函数</h2>
+<pre><code>//使用function方法定义构造函数
+function Person(name, age){
+	this.name = name;
+	this.age = age;
+}
+var lenhart =  new Person(lenhart, 25);
+console.log(lenhart); //{name: 'lenhart', age: 25}
+</code></pre>
+<pre><code>//尝试使用箭头函数
+var Person = (name, age) =&gt;{
+	this.name = name;
+	this.age = age;
+};
+var lenhart = new Person('lenhart', 25); //Uncaught TypeError: Person is not a constructor
+</code></pre>
+<blockquote>
+<p>function是可以定义构造函数的，而箭头函数是不行的。</p>
+</blockquote>
+<h2><a id="4_55"></a>4.变量提升</h2>
+<p>由于js的内存机制，function的级别最高，而用箭头函数定义函数的时候，需要var(let const定义的时候更不必说)关键词，而var所定义的变量不能得到变量提升，故箭头函数一定要定义于调用之前！</p>
+<pre><code>foo(); //123
+function foo(){
+	console.log('123');
+}
+
+arrowFn(); //Uncaught TypeError: arrowFn is not a function
+var arrowFn = () =&gt; {
+	console.log('456');
+};
+</code></pre>
+</div>
+</body>
+
+</html>
